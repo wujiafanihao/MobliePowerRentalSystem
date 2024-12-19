@@ -1,0 +1,12 @@
+public class Dog extends Animal{
+
+    public Dog(String kind) {
+        super(kind);
+    }
+
+    @Override
+    public void cry() {
+        System.out.println("⼩狗的叫声：咪咪咪~~~ ");
+    }
+
+}

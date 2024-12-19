@@ -1,0 +1,429 @@
+package Order;
+
+import User.User;
+import util.DBHelper;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class Order {
+    private int id;
+    private int userId;
+    private int powerbankId;
+    private String brand;
+    private int rentalDurationHours;
+    private double totalCost;
+    private String orderCode;
+    private Timestamp rentalStartTime;
+    private Timestamp returnTime;
+    private double deposit;
+
+    public Order() {}
+
+    public Order(int id, int userId, int powerbankId, String brand, int rentalDurationHours, 
+                double totalCost, String orderCode, Timestamp rentalStartTime, Timestamp returnTime, double deposit) {
+        this.id = id;
+        this.userId = userId;
+        this.powerbankId = powerbankId;
+        this.brand = brand;
+        this.rentalDurationHours = rentalDurationHours;
+        this.totalCost = totalCost;
+        this.orderCode = orderCode;
+        this.rentalStartTime = rentalStartTime;
+        this.returnTime = returnTime;
+        this.deposit = deposit;
+    }
+
+    // Getters and Setters
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+    public int getUserId() { return userId; }
+    public void setUserId(int userId) { this.userId = userId; }
+    public int getPowerbankId() { return powerbankId; }
+    public void setPowerbankId(int powerbankId) { this.powerbankId = powerbankId; }
+    public String getBrand() { return brand; }
+    public void setBrand(String brand) { this.brand = brand; }
+    public int getRentalDurationHours() { return rentalDurationHours; }
+    public void setRentalDurationHours(int rentalDurationHours) { this.rentalDurationHours = rentalDurationHours; }
+    public double getTotalCost() { return totalCost; }
+    public void setTotalCost(double totalCost) { this.totalCost = totalCost; }
+    public String getOrderCode() { return orderCode; }
+    public void setOrderCode(String orderCode) { this.orderCode = orderCode; }
+    public Timestamp getRentalStartTime() { return rentalStartTime; }
+    public void setRentalStartTime(Timestamp rentalStartTime) { this.rentalStartTime = rentalStartTime; }
+    public Timestamp getReturnTime() { return returnTime; }
+    public void setReturnTime(Timestamp returnTime) { this.returnTime = returnTime; }
+    public double getDeposit() { return deposit; }
+    public void setDeposit(double deposit) { this.deposit = deposit; }
+
+    // 获取用户当前租借的订单
+    public static List<Order> getCurrentRentals(int userId) throws SQLException {
+        List<Order> rentals = new ArrayList<>();
+        String sql = "SELECT o.* " +
+                    "FROM `Order` o " +
+                    "WHERE o.user_id = ? " +
+                    "AND o.rental_duration_hours = 0 " +
+                    "ORDER BY o.rental_start_time DESC";
+        
+        LogUtil.info("Querying current rentals for user ID: " + userId);
+        var rs = DBHelper.executeQuery(sql, userId);
+        while (rs.next()) {
+            Order order = new Order();
+            order.setId(rs.getInt("id"));
+            order.setUserId(rs.getInt("user_id"));
+            order.setPowerbankId(rs.getInt("powerbank_id"));
+            order.setBrand(rs.getString("brand"));
+            order.setRentalStartTime(rs.getTimestamp("rental_start_time"));
+            order.setRentalDurationHours(rs.getInt("rental_duration_hours"));
+            order.setTotalCost(rs.getDouble("total_cost"));
+            order.setOrderCode(rs.getString("order_code"));
+            order.setDeposit(rs.getDouble("deposit"));
+            rentals.add(order);
+            LogUtil.debug("Found rental record - Order ID: " + order.getId() + ", Powerbank ID: " + order.getPowerbankId());
+        }
+        DBHelper.closeResources(rs, null);
+        return rentals;
+    }
+
+    // 创建租借订单
+    public static boolean createRental(int userId, int powerbankId, String brand) throws SQLException {
+        LogUtil.info("Starting rental creation - User ID: " + userId + ", Powerbank ID: " + powerbankId + ", Brand: " + brand);
+
+        // 开启事务
+        Connection conn = DBHelper.getConnection();
+        conn.setAutoCommit(false);
+        try {
+            // 检查用户会员状态和余额
+            String checkUserSql = "SELECT balance, status FROM user WHERE id = ? FOR UPDATE";
+            PreparedStatement checkUserStmt = conn.prepareStatement(checkUserSql);
+            checkUserStmt.setInt(1, userId);
+            ResultSet userRs = checkUserStmt.executeQuery();
+
+            if (!userRs.next()) {
+                LogUtil.error("Rental creation failed - User does not exist");
+                return false;
+            }
+
+            double balance = userRs.getDouble("balance");
+            String status = userRs.getString("status");
+            boolean isVipOrSvip = "VIP".equals(status) || "SVIP".equals(status);
+            
+            LogUtil.debug("User balance: " + balance + ", Status: " + status);
+            
+            // 计算所需金额（押金）- VIP和SVIP不需要押金
+            double requiredAmount = isVipOrSvip ? 0 : 99.0;
+            LogUtil.debug("Required deposit amount: " + requiredAmount);
+            
+            if (balance < requiredAmount) {
+                LogUtil.warning("Rental creation failed - Insufficient balance");
+                return false;
+            }
+
+            // 检查电源是否可用
+            String checkSql = "SELECT status FROM powerbank WHERE id = ? FOR UPDATE";
+            PreparedStatement checkStmt = conn.prepareStatement(checkSql);
+            checkStmt.setInt(1, powerbankId);
+            ResultSet rs = checkStmt.executeQuery();
+            
+            if (!rs.next() || !"Available".equals(rs.getString("status"))) {
+                LogUtil.warning("Rental creation failed - Powerbank not available");
+                return false;
+            }
+            
+            // 扣除押金
+            if (!isVipOrSvip) {
+                String updateBalanceSql = "UPDATE user SET balance = balance - ? WHERE id = ?";
+                PreparedStatement updateBalanceStmt = conn.prepareStatement(updateBalanceSql);
+                updateBalanceStmt.setDouble(1, requiredAmount);
+                updateBalanceStmt.setInt(2, userId);
+                int updateResult = updateBalanceStmt.executeUpdate();
+                if (updateResult > 0) {
+                    LogUtil.info("Deposit deducted: " + requiredAmount + ", New balance: " + (balance - requiredAmount));
+                }
+            } else {
+                LogUtil.info("VIP/SVIP user, no deposit required");
+            }
+
+            // 创建订单
+            String createOrderSql = "INSERT INTO `Order` (user_id, powerbank_id, brand, rental_start_time, deposit) VALUES (?, ?, ?, NOW(), ?)";
+            PreparedStatement orderStmt = conn.prepareStatement(createOrderSql);
+            orderStmt.setInt(1, userId);
+            orderStmt.setInt(2, powerbankId);
+            orderStmt.setString(3, brand);
+            orderStmt.setDouble(4, requiredAmount);
+            int orderResult = orderStmt.executeUpdate();
+
+            if (orderResult > 0) {
+                // 验证订单是否正确创建
+                String verifyOrderSql = "SELECT * FROM `Order` WHERE id = LAST_INSERT_ID()";
+                PreparedStatement verifyStmt = conn.prepareStatement(verifyOrderSql);
+                ResultSet verifyRs = verifyStmt.executeQuery();
+                if (verifyRs.next()) {
+                    LogUtil.debug("Order creation verified - Deposit: " + verifyRs.getDouble("deposit"));
+                }
+                // 更新电源状态
+                String updatePowerBankSql = "UPDATE powerbank SET status = 'InUse' WHERE id = ?";
+                PreparedStatement powerBankStmt = conn.prepareStatement(updatePowerBankSql);
+                powerBankStmt.setInt(1, powerbankId);
+                int powerBankResult = powerBankStmt.executeUpdate();
+
+                if (powerBankResult > 0) {
+                    conn.commit();
+                    LogUtil.info("Rental order created successfully");
+                    return true;
+                } else {
+                    LogUtil.error("Rental creation failed - Unable to update powerbank status");
+                }
+            } else {
+                LogUtil.error("Rental creation failed - Unable to insert order record");
+            }
+            
+            conn.rollback();
+            return false;
+        } catch (SQLException e) {
+            LogUtil.error("Exception during rental creation, rolling back", e);
+            conn.rollback();
+            throw e;
+        } finally {
+            conn.setAutoCommit(true);
+            LogUtil.info("Rental creation process ended");
+        }
+    }
+
+    // 归还订单
+    public static boolean returnRental(int orderId, int powerbankId, long hours, double totalCost, String orderCode) throws SQLException {
+        LogUtil.info("Starting return process - Order ID: " + orderId + ", Powerbank ID: " + powerbankId + ", Duration: " + hours + " hours, Total cost: " + totalCost);
+
+        // 开启事务
+        Connection conn = DBHelper.getConnection();
+        conn.setAutoCommit(false);
+        try {
+            // 获取管理员账户
+            User admin = User.getAdminUser();
+            if (admin == null) {
+                throw new SQLException("Unable to find admin account");
+            }
+
+            // 获取订单和用户信息
+            String getOrderSql = "SELECT o.user_id, o.deposit, u.is_vip, u.is_svip, u.balance " +
+                               "FROM `Order` o " +
+                               "JOIN user u ON o.user_id = u.id " +
+                               "WHERE o.id = ? FOR UPDATE";
+            PreparedStatement getOrderStmt = conn.prepareStatement(getOrderSql);
+            getOrderStmt.setInt(1, orderId);
+            ResultSet orderRs = getOrderStmt.executeQuery();
+
+            if (!orderRs.next()) {
+                LogUtil.warning("Return failed - Order does not exist");
+                return false;
+            }
+
+            int userId = orderRs.getInt("user_id");
+            double deposit = orderRs.getDouble("deposit");
+            boolean isVip = orderRs.getBoolean("is_vip");
+            boolean isSvip = orderRs.getBoolean("is_svip");
+            double currentBalance = orderRs.getDouble("balance");
+
+            LogUtil.debug("User current balance: " + currentBalance + ", Deposit: " + deposit);
+
+            // 计算实际费用（应用会员折扣）
+            double actualCost = totalCost;
+            if (isSvip) {
+                actualCost *= 0.5;
+            } else if (isVip) {
+                actualCost *= 0.8;
+            }
+
+            // 更新用户余额（退还押金并扣除租金）
+            String updateUserSql = "UPDATE user SET balance = balance + ? - ? WHERE id = ?";
+            PreparedStatement userStmt = conn.prepareStatement(updateUserSql);
+            userStmt.setDouble(1, deposit);
+            userStmt.setDouble(2, actualCost);
+            userStmt.setInt(3, userId);
+            int updateResult = userStmt.executeUpdate();
+            
+            if (updateResult > 0) {
+                LogUtil.info("Deposit returned: " + deposit + ", Rent deducted: " + actualCost + ", New balance: " + (currentBalance + deposit - actualCost));
+            }
+
+            // 更新管理员余额（增加租金收入）
+            String updateAdminSql = "UPDATE user SET balance = balance + ? WHERE id = ?";
+            PreparedStatement adminStmt = conn.prepareStatement(updateAdminSql);
+            adminStmt.setDouble(1, actualCost);
+            adminStmt.setInt(2, admin.getId());
+            adminStmt.executeUpdate();
+
+            // 更新订单
+            String updateOrderSql = "UPDATE `Order` SET " +
+                                 "rental_duration_hours = ?, " +
+                                 "total_cost = ?, " +
+                                 "order_code = ?, " +
+                                 "return_time = NOW() " +
+                                 "WHERE id = ?";
+            PreparedStatement orderStmt = conn.prepareStatement(updateOrderSql);
+            orderStmt.setLong(1, hours);
+            orderStmt.setDouble(2, actualCost);
+            orderStmt.setString(3, orderCode);
+            orderStmt.setInt(4, orderId);
+            orderStmt.executeUpdate();
+
+            // 更新电源状态
+            String updatePowerBankSql = "UPDATE powerbank SET status = 'Available' WHERE id = ?";
+            PreparedStatement powerBankStmt = conn.prepareStatement(updatePowerBankSql);
+            powerBankStmt.setInt(1, powerbankId);
+            powerBankStmt.executeUpdate();
+
+            conn.commit();
+            LogUtil.info("Return successful - Order ID: " + orderId + ", Powerbank ID: " + powerbankId);
+            return true;
+        } catch (SQLException e) {
+            LogUtil.error("Return failed, rolling back", e);
+            conn.rollback();
+            throw e;
+        } finally {
+            conn.setAutoCommit(true);
+        }
+    }
+
+    // 获取租借信息（通过电源ID）
+    public static Order getRentalByPowerbankId(int powerbankId) throws SQLException {
+        String sql = "SELECT o.* " +
+                    "FROM `Order` o " +
+                    "WHERE o.powerbank_id = ? " +
+                    "AND o.rental_duration_hours = 0 " +
+                    "ORDER BY o.rental_start_time DESC LIMIT 1";
+        
+        System.out.println("查询租借信息 - SQL: " + sql.replace("?", String.valueOf(powerbankId)));
+        var rs = DBHelper.executeQuery(sql, powerbankId);
+        if (rs.next()) {
+            Order order = new Order();
+            order.setId(rs.getInt("id"));
+            order.setUserId(rs.getInt("user_id"));
+            order.setPowerbankId(rs.getInt("powerbank_id"));
+            order.setBrand(rs.getString("brand"));
+            order.setRentalStartTime(rs.getTimestamp("rental_start_time"));
+            order.setRentalDurationHours(rs.getInt("rental_duration_hours"));
+            order.setTotalCost(rs.getDouble("total_cost"));
+            order.setOrderCode(rs.getString("order_code"));
+            order.setDeposit(rs.getDouble("deposit"));
+            System.out.println("找到租借订单 - 订单ID: " + order.getId() + ", 用户ID: " + order.getUserId());
+            DBHelper.closeResources(rs, null);
+            return order;
+        }
+        System.out.println("未找到租借信息");
+        DBHelper.closeResources(rs, null);
+        return null;
+    }
+
+    // 获取订单信息（通过订单ID）
+    public static Order getOrderById(int orderId) throws SQLException {
+        String sql = "SELECT o.*, p.rental_price_per_hour, p.battery_level " +
+                    "FROM `Order` o " +
+                    "JOIN powerbank p ON o.powerbank_id = p.id " +
+                    "WHERE o.id = ? AND o.rental_duration_hours = 0";
+        
+        System.out.println("执行查询订单信息 - 订单ID: " + orderId);
+        var rs = DBHelper.executeQuery(sql, orderId);
+        
+        if (rs.next()) {
+            Order order = new Order();
+            order.setId(rs.getInt("id"));
+            order.setUserId(rs.getInt("user_id"));
+            order.setPowerbankId(rs.getInt("powerbank_id"));
+            order.setBrand(rs.getString("brand"));
+            order.setRentalStartTime(rs.getTimestamp("rental_start_time"));
+            order.setRentalDurationHours(rs.getInt("rental_duration_hours"));
+            order.setTotalCost(rs.getDouble("total_cost"));
+            order.setOrderCode(rs.getString("order_code"));
+            order.setDeposit(rs.getDouble("deposit"));
+            System.out.println("找到订单信息 - 电源ID: " + order.getPowerbankId());
+            DBHelper.closeResources(rs, null);
+            return order;
+        }
+        System.out.println("未找到订单信息");
+        DBHelper.closeResources(rs, null);
+        return null;
+    }
+
+    // 获取用户的历史订单
+    public static List<Order> getOrderHistory(int userId) throws SQLException {
+        List<Order> orders = new ArrayList<>();
+        String sql = "SELECT * FROM `Order` WHERE user_id = ? ORDER BY rental_start_time DESC";
+        
+        var rs = DBHelper.executeQuery(sql, userId);
+        while (rs.next()) {
+            Order order = new Order();
+            order.setId(rs.getInt("id"));
+            order.setUserId(rs.getInt("user_id"));
+            order.setPowerbankId(rs.getInt("powerbank_id"));
+            order.setBrand(rs.getString("brand"));
+            order.setRentalStartTime(rs.getTimestamp("rental_start_time"));
+            order.setRentalDurationHours(rs.getInt("rental_duration_hours"));
+            order.setTotalCost(rs.getDouble("total_cost"));
+            order.setOrderCode(rs.getString("order_code"));
+            order.setReturnTime(rs.getTimestamp("return_time"));
+            order.setDeposit(rs.getDouble("deposit"));
+            orders.add(order);
+        }
+        DBHelper.closeResources(rs, null);
+        return orders;
+    }
+
+    // 搜索订单
+    public static List<Order> searchOrders(int userId, String keyword) throws SQLException {
+        List<Order> orders = new ArrayList<>();
+        String sql = "SELECT * FROM `Order` WHERE user_id = ? AND " +
+                    "(order_code LIKE ? OR brand LIKE ? OR " +
+                    "CAST(powerbank_id AS CHAR) LIKE ? OR " +
+                    "CAST(total_cost AS CHAR) LIKE ?) " +
+                    "ORDER BY rental_start_time DESC";
+        
+        String searchPattern = "%" + keyword + "%";
+        var rs = DBHelper.executeQuery(sql, userId, searchPattern, searchPattern, searchPattern, searchPattern);
+        while (rs.next()) {
+            Order order = new Order();
+            order.setId(rs.getInt("id"));
+            order.setUserId(rs.getInt("user_id"));
+            order.setPowerbankId(rs.getInt("powerbank_id"));
+            order.setBrand(rs.getString("brand"));
+            order.setRentalStartTime(rs.getTimestamp("rental_start_time"));
+            order.setRentalDurationHours(rs.getInt("rental_duration_hours"));
+            order.setTotalCost(rs.getDouble("total_cost"));
+            order.setOrderCode(rs.getString("order_code"));
+            order.setReturnTime(rs.getTimestamp("return_time"));
+            order.setDeposit(rs.getDouble("deposit"));
+            orders.add(order);
+        }
+        DBHelper.closeResources(rs, null);
+        return orders;
+    }
+
+    // 删除订单
+    public static boolean deleteOrder(int orderId) throws SQLException {
+        String sql = "DELETE FROM `Order` WHERE id = ?";
+        return DBHelper.executeUpdate(sql, orderId) > 0;
+    }
+
+    // 通过订单号查找订单
+    public static Order findByOrderCode(String orderCode) throws SQLException {
+        String sql = "SELECT * FROM `Order` WHERE order_code = ?";
+        var rs = DBHelper.executeQuery(sql, orderCode);
+        if (rs.next()) {
+            Order order = new Order();
+            order.setId(rs.getInt("id"));
+            order.setUserId(rs.getInt("user_id"));
+            order.setPowerbankId(rs.getInt("powerbank_id"));
+            order.setBrand(rs.getString("brand"));
+            order.setRentalStartTime(rs.getTimestamp("rental_start_time"));
+            order.setRentalDurationHours(rs.getInt("rental_duration_hours"));
+            order.setTotalCost(rs.getDouble("total_cost"));
+            order.setOrderCode(rs.getString("order_code"));
+            order.setReturnTime(rs.getTimestamp("return_time"));
+            order.setDeposit(rs.getDouble("deposit"));
+            DBHelper.closeResources(rs, null);
+            return order;
+        }
+        DBHelper.closeResources(rs, null);
+        return null;
+    }
+}

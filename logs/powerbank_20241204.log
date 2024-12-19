@@ -1,0 +1,136 @@
+[2024-12-04 23:28:41] [信息] 程序启动，准备初始化电池监控服务... 
+[2024-12-04 23:28:41] [信息] BatteryMonitor 实例已创建 
+[2024-12-04 23:28:41] [信息] 正在启动电池监控服务... 
+[2024-12-04 23:28:41] [信息] 电池监控服务已启动，将每5分钟检查一次电池状态 
+[2024-12-04 23:28:41] [信息] 开始检查电池状态... 
+[2024-12-04 23:28:41] [信息] 电池监控服务初始化完成 
+[2024-12-04 23:28:41] [信息] 登录界面已启动 
+[2024-12-04 23:28:41] [信息] 已处理 0 个正在使用的电池 
+[2024-12-04 23:28:41] [信息] 已处理 0 个正在充电的电池 
+[2024-12-04 23:28:41] [信息] 电池状态检查完成 
+[2024-12-04 23:47:23] [信息] 程序启动，准备初始化电池监控服务... 
+[2024-12-04 23:47:23] [信息] BatteryMonitor 实例已创建 
+[2024-12-04 23:47:23] [信息] 正在启动电池监控服务... 
+[2024-12-04 23:47:23] [信息] 电池监控服务已启动，将每5分钟检查一次电池状态 
+[2024-12-04 23:47:23] [信息] 开始检查电池状态... 
+[2024-12-04 23:47:23] [信息] 电池监控服务初始化完成 
+[2024-12-04 23:47:23] [信息] 正在建立数据库连接... 
+[2024-12-04 23:47:24] [信息] 登录界面已启动 
+[2024-12-04 23:47:24] [信息] 数据库连接建立成功 
+[2024-12-04 23:47:24] [详细] 执行SQL查询: SELECT * FROM powerbank WHERE status = 'InUse' 
+[2024-12-04 23:47:24] [信息] 已处理 0 个正在使用的电池 
+[2024-12-04 23:47:24] [详细] 执行SQL查询: SELECT * FROM powerbank WHERE status = 'Unavailable' 
+[2024-12-04 23:47:24] [信息] 已处理 0 个正在充电的电池 
+[2024-12-04 23:47:24] [信息] 电池状态检查完成 
+[2024-12-04 23:47:27] [详细] 执行SQL查询: SELECT * FROM User WHERE username = ? AND password = ? 
+[2024-12-04 23:47:27] [详细] 执行SQL查询: SELECT status FROM User WHERE username = ? AND password = ? 
+[2024-12-04 23:47:27] [详细] 执行SQL查询: SELECT * FROM powerbank 
+[2024-12-04 23:47:31] [详细] 执行SQL查询: SELECT * FROM powerbank WHERE id = ? 
+[2024-12-04 23:47:43] [详细] 执行SQL查询: SELECT * FROM powerbank 
+[2024-12-04 23:47:50] [详细] 执行SQL查询: SELECT * FROM powerbank 
+[2024-12-04 23:47:58] [详细] 执行SQL查询: SELECT * FROM User WHERE username = ? AND password = ? 
+[2024-12-04 23:47:58] [详细] 执行SQL查询: SELECT status FROM User WHERE username = ? AND password = ? 
+[2024-12-04 23:47:58] [详细] 执行SQL查询: SELECT * FROM powerbank 
+[2024-12-04 23:48:01] [详细] 执行SQL查询: SELECT * FROM user 
+[2024-12-04 23:48:03] [详细] 执行SQL查询: SELECT * FROM User WHERE username = ? 
+[2024-12-04 23:48:03] [详细] 执行SQL查询: SELECT * FROM powerbank WHERE status = 'Available' 
+[2024-12-04 23:48:13] [详细] 执行SQL查询: SELECT * FROM user WHERE status = ? 
+[2024-12-04 23:48:17] [详细] 执行SQL查询: SELECT * FROM user 
+[2024-12-04 23:51:24] [信息] 程序启动，准备初始化电池监控服务... 
+[2024-12-04 23:51:24] [信息] BatteryMonitor 实例已创建 
+[2024-12-04 23:51:24] [信息] 正在启动电池监控服务... 
+[2024-12-04 23:51:24] [信息] 电池监控服务已启动，将每5分钟检查一次电池状态 
+[2024-12-04 23:51:24] [信息] 开始检查电池状态... 
+[2024-12-04 23:51:24] [信息] 电池监控服务初始化完成 
+[2024-12-04 23:51:24] [信息] 正在建立数据库连接... 
+[2024-12-04 23:51:25] [信息] 数据库连接建立成功 
+[2024-12-04 23:51:25] [详细] 执行SQL查询: SELECT * FROM powerbank WHERE status = 'InUse' 
+[2024-12-04 23:51:25] [信息] 已处理 0 个正在使用的电池 
+[2024-12-04 23:51:25] [详细] 执行SQL查询: SELECT * FROM powerbank WHERE status = 'Unavailable' 
+[2024-12-04 23:51:25] [信息] 已处理 0 个正在充电的电池 
+[2024-12-04 23:51:25] [信息] 电池状态检查完成 
+[2024-12-04 23:51:25] [信息] 登录界面已启动 
+[2024-12-04 23:51:26] [详细] 执行SQL查询: SELECT * FROM User WHERE username = ? AND password = ? 
+[2024-12-04 23:51:26] [详细] 执行SQL查询: SELECT status FROM User WHERE username = ? AND password = ? 
+[2024-12-04 23:51:26] [详细] 执行SQL查询: SELECT * FROM powerbank 
+[2024-12-04 23:51:28] [详细] 执行SQL查询: SELECT * FROM user 
+[2024-12-04 23:55:13] [信息] 程序启动，准备初始化电池监控服务... 
+[2024-12-04 23:55:13] [信息] BatteryMonitor 实例已创建 
+[2024-12-04 23:55:13] [信息] 正在启动电池监控服务... 
+[2024-12-04 23:55:13] [信息] 电池监控服务已启动，将每5分钟检查一次电池状态 
+[2024-12-04 23:55:13] [信息] 开始检查电池状态... 
+[2024-12-04 23:55:13] [信息] 电池监控服务初始化完成 
+[2024-12-04 23:55:13] [信息] 正在建立数据库连接... 
+[2024-12-04 23:55:14] [信息] 登录界面已启动 
+[2024-12-04 23:55:14] [信息] 数据库连接建立成功 
+[2024-12-04 23:55:14] [详细] 执行SQL查询: SELECT * FROM powerbank WHERE status = 'InUse' 
+[2024-12-04 23:55:14] [信息] 已处理 0 个正在使用的电池 
+[2024-12-04 23:55:14] [详细] 执行SQL查询: SELECT * FROM powerbank WHERE status = 'Unavailable' 
+[2024-12-04 23:55:14] [信息] 已处理 0 个正在充电的电池 
+[2024-12-04 23:55:14] [信息] 电池状态检查完成 
+[2024-12-04 23:55:15] [详细] 执行SQL查询: SELECT * FROM User WHERE username = ? AND password = ? 
+[2024-12-04 23:55:15] [信息] User authentication attempt: root - Success: true 
+[2024-12-04 23:55:15] [详细] 执行SQL查询: SELECT status FROM User WHERE username = ? AND password = ? 
+[2024-12-04 23:55:15] [信息] Checked if user is admin: root - Result: true 
+[2024-12-04 23:55:15] [详细] 执行SQL查询: SELECT * FROM powerbank 
+[2024-12-04 23:55:20] [详细] 执行SQL查询: SELECT * FROM user 
+[2024-12-04 23:55:36] [详细] 执行SQL查询: SELECT * FROM User WHERE username = ? 
+[2024-12-04 23:55:36] [详细] 执行SQL查询: SELECT * FROM powerbank WHERE status = 'Available' 
+[2024-12-04 23:56:04] [信息] 程序启动，准备初始化电池监控服务... 
+[2024-12-04 23:56:04] [信息] BatteryMonitor 实例已创建 
+[2024-12-04 23:56:04] [信息] 正在启动电池监控服务... 
+[2024-12-04 23:56:04] [信息] 电池监控服务已启动，将每5分钟检查一次电池状态 
+[2024-12-04 23:56:04] [信息] 开始检查电池状态... 
+[2024-12-04 23:56:04] [信息] 电池监控服务初始化完成 
+[2024-12-04 23:56:04] [信息] 正在建立数据库连接... 
+[2024-12-04 23:56:04] [信息] 数据库连接建立成功 
+[2024-12-04 23:56:04] [详细] 执行SQL查询: SELECT * FROM powerbank WHERE status = 'InUse' 
+[2024-12-04 23:56:04] [信息] 登录界面已启动 
+[2024-12-04 23:56:04] [信息] 已处理 0 个正在使用的电池 
+[2024-12-04 23:56:04] [详细] 执行SQL查询: SELECT * FROM powerbank WHERE status = 'Unavailable' 
+[2024-12-04 23:56:04] [信息] 已处理 0 个正在充电的电池 
+[2024-12-04 23:56:04] [信息] 电池状态检查完成 
+[2024-12-04 23:56:06] [详细] 执行SQL查询: SELECT * FROM User WHERE username = ? AND password = ? 
+[2024-12-04 23:56:06] [信息] User authentication attempt: root - Success: true 
+[2024-12-04 23:56:06] [详细] 执行SQL查询: SELECT status FROM User WHERE username = ? AND password = ? 
+[2024-12-04 23:56:06] [信息] Checked if user is admin: root - Result: true 
+[2024-12-04 23:56:06] [详细] 执行SQL查询: SELECT * FROM powerbank 
+[2024-12-04 23:56:08] [详细] 执行SQL查询: SELECT * FROM user 
+[2024-12-04 23:56:10] [详细] 执行SQL查询: SELECT * FROM User WHERE username = ? 
+[2024-12-04 23:56:10] [详细] 执行SQL查询: SELECT * FROM powerbank WHERE status = 'Available' 
+[2024-12-04 23:56:13] [详细] 执行SQL查询: SELECT * FROM powerbank WHERE id = ? 
+[2024-12-04 23:56:13] [信息] Starting rental creation - User ID: 8, Powerbank ID: 3, Brand: 怪兽 
+[2024-12-04 23:56:13] [详细] User balance: 61.74, Status: VIP 
+[2024-12-04 23:56:13] [详细] Required deposit amount: 0.0 
+[2024-12-04 23:56:13] [信息] VIP/SVIP user, no deposit required 
+[2024-12-04 23:56:13] [详细] Order creation verified - Deposit: 0.0 
+[2024-12-04 23:56:13] [信息] Rental order created successfully 
+[2024-12-04 23:56:13] [信息] Rental creation process ended 
+[2024-12-04 23:56:13] [详细] 执行SQL更新: UPDATE powerbank SET status = ? WHERE id = ? 
+[2024-12-04 23:56:13] [详细] 执行SQL查询: SELECT balance FROM user WHERE id = ? 
+[2024-12-04 23:56:14] [信息] Querying current rentals for user ID: 8 
+[2024-12-04 23:56:14] [详细] 执行SQL查询: SELECT o.* FROM `Order` o WHERE o.user_id = ? AND o.rental_duration_hours = 0 ORDER BY o.rental_start_time DESC 
+[2024-12-04 23:56:14] [详细] Found rental record - Order ID: 3430, Powerbank ID: 3 
+[2024-12-04 23:56:14] [详细] 执行SQL查询: SELECT rental_price_per_hour FROM powerbank WHERE id = ? 
+[2024-12-04 23:56:14] [详细] 执行SQL查询: SELECT * FROM powerbank WHERE id = ? 
+[2024-12-04 23:56:14] [详细] 执行SQL查询: SELECT * FROM powerbank WHERE status = 'Available' 
+[2024-12-04 23:56:16] [信息] Querying current rentals for user ID: 8 
+[2024-12-04 23:56:16] [详细] 执行SQL查询: SELECT o.* FROM `Order` o WHERE o.user_id = ? AND o.rental_duration_hours = 0 ORDER BY o.rental_start_time DESC 
+[2024-12-04 23:56:16] [详细] Found rental record - Order ID: 3430, Powerbank ID: 3 
+[2024-12-04 23:56:16] [详细] 执行SQL查询: SELECT rental_price_per_hour FROM powerbank WHERE id = ? 
+[2024-12-04 23:56:16] [详细] 执行SQL查询: SELECT * FROM powerbank WHERE id = ? 
+[2024-12-04 23:56:16] [详细] 执行SQL查询: SELECT o.* FROM `Order` o WHERE o.powerbank_id = ? AND o.rental_duration_hours = 0 ORDER BY o.rental_start_time DESC LIMIT 1 
+[2024-12-04 23:56:16] [详细] 执行SQL查询: SELECT rental_price_per_hour FROM powerbank WHERE id = ? 
+[2024-12-04 23:56:16] [信息] Starting return process - Order ID: 3430, Powerbank ID: 3, Duration: 1 hours, Total cost: 2.0 
+[2024-12-04 23:56:16] [详细] 执行SQL查询: SELECT * FROM User WHERE status = 'Admin' LIMIT 1 
+[2024-12-04 23:56:16] [详细] User current balance: 61.74, Deposit: 0.0 
+[2024-12-04 23:56:16] [信息] Deposit returned: 0.0, Rent deducted: 1.6, New balance: 60.14 
+[2024-12-04 23:56:16] [信息] Return successful - Order ID: 3430, Powerbank ID: 3 
+[2024-12-04 23:56:16] [详细] 执行SQL查询: SELECT balance FROM user WHERE id = ? 
+[2024-12-04 23:56:16] [信息] Querying current rentals for user ID: 8 
+[2024-12-04 23:56:16] [详细] 执行SQL查询: SELECT o.* FROM `Order` o WHERE o.user_id = ? AND o.rental_duration_hours = 0 ORDER BY o.rental_start_time DESC 
+[2024-12-04 23:56:16] [详细] 执行SQL查询: SELECT * FROM powerbank WHERE status = 'Available' 
+[2024-12-04 23:56:18] [详细] 执行SQL查询: SELECT * FROM `Order` WHERE user_id = ? ORDER BY rental_start_time DESC 
+[2024-12-04 23:56:21] [详细] 执行SQL查询: SELECT * FROM `Order` WHERE order_code = ? 
+[2024-12-04 23:56:21] [详细] 执行SQL更新: DELETE FROM `Order` WHERE id = ? 
+[2024-12-04 23:56:21] [详细] 执行SQL查询: SELECT * FROM `Order` WHERE user_id = ? ORDER BY rental_start_time DESC 
